@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import csv  # CSV processing
 import re   # Regular expressions
 
@@ -66,35 +67,51 @@ class Book:
         # Owned Copies
 
 
-        # Remove hash characters from title - we don't want new tags!
-        self.title = self.book["Title"].replace("#","")
+        # Removed from book title
+        #   # don't want new tags!
+        #   /  "     "   new directory! (we use title as a filename)
+        self.title = self.book["Title"].replace("#","").replace("/"," ")
+
+        # replace square brackets in the title with round ones - avoid phantom wikilinks
+        self.title = self.title.replace("[","(").replace("]",")")
         self.publisher = self.book['Publisher']
         self.id = self.book["Book Id"]
         self.rating = self.book["My Rating"]
         self.shelves = self.book["Bookshelves"]
         self.review = self.book["My Review"]
-        self.authorNames = [self.book['Author'].strip()]
-        if (self.book['Additional Authors'] != ''):
-          others = self.book['Additional Authors'].split(',')
-          [self.authorNames.append(author.strip()) for author in others]
+        self.authorName = self.book['Author'].strip()
+
+        # turn otherauthors into an array
+        if self.book['Additional Authors'] == "":
+            self.otherAuthors = []
+        else:
+            self.otherAuthors = self.book['Additional Authors'].split(',')
+
+        #print(f'authorName: {self.authorName} otherAuthors:{self.otherAuthors}')
+        self.authorNames =  [self.authorName]
+        self.authorNames.extend(self.otherAuthors)
+        #print(f'authorNames: {self.authorNames}')
+
+        # Construct the goodreads URL
         self.url = f'https://www.goodreads.com/book/show/{self.id}'
 
     def authorMarkdown(self):
         # Render each author as a wikilink
-        authorLinks = [wikiLink(authorName) for authorName in self.authorNames]
-
-        # initialise with the first author in the list
-        authorMD = authorLinks[0]
-
-        if (len(authorLinks) > 1):
-            authorMD += " with;\n"
-            for author in authorLinks[1:-1]:
-                authorMD = authorMD + f'    - {author}\n'
-
-        return authorMD
+        md = f'[[{self.authorName}]]'
+        if self.otherAuthors != []:
+            md += " with "
+            first = True
+            for oa in self.otherAuthors:
+                if first != True:
+                    md += ', '
+                md += f'[[{oa}]]'
+                first = False
+        return md
 
 
     def markdown(self):
+        authorMarkdown = self.authorMarkdown()
+        #print(f'authorMarkdown: {authorMarkdown}')
         doc = (
           f'# {self.title}\n'
           f'#Book #Goodreads\n'
@@ -106,7 +123,10 @@ class Book:
           doc += f'- My rating: {self.rating} Stars\n'
 
         if self.shelves != "":
-          doc += f'- Shelves: {self.shelves}\n'
+          # Convert each shelf name into a tag
+          shelves = "#" + self.shelves.replace(', ',', #')
+          #print(f'Shelves: {self.shelves}  Tagged:{shelves}')
+          doc += f'- Shelves: {shelves}\n'
 
         if self.review != "":
             # A little HTML translation
@@ -123,11 +143,17 @@ class Library:
         # statement
         self.authors = {} # Define authors as a dictionary so that we can retrieve them by name
         self.books = []   # Simple list of books
+        self.ids = []
+
+        #with open('examples/history.txt', r) as oldIds:
+            # get the old IDs
 
         with open(filename, 'r') as data:
           # for each line in the CSV
           for bookItem in csv.DictReader(data):
+              #print('Creating a book')
               book = Book(bookItem)          # create a new book
+              self.ids.append(book.id)
               self.books.append(book)             # Add this book to the list
               for name in book.authorNames:  # for each author of the book
                   # if the author has not yet been recorded, do it now
@@ -146,6 +172,11 @@ class Library:
         for authorName in list(self.authors.keys()):
             print(self.authors[authorName].markdown())
 
+    def saveIds(self, fileName):
+        with open(fileName, 'w') as idfile:
+            for id in self.ids:
+                idfile.write(f'{id}\n')
+
     def saveMarkdown(self, directory):
         for authorName in self.authors.keys():
             author = self.authors[authorName]
@@ -160,5 +191,6 @@ class Library:
 
 
 
-library = Library("examples/goodreads_library_export.csv")
-library.saveMarkdown('examples/library')
+library = Library("goodreads_library_export.csv")
+library.saveMarkdown('examples/Goodreads Library')
+library.saveIds('examples/libraryIds.txt')
