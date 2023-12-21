@@ -23,7 +23,7 @@ python3 gr2md.py
 ```
 
 ## Import to other systems
-This has been tested with Upnote, using its built-in markdown import. 
+This has been tested with Upnote, using its built-in markdown import.
 
 
 ## Examples
@@ -38,7 +38,7 @@ This has been tested with Upnote, using its built-in markdown import.
 - [[Quantum Mechanics: The Theoretical Minimum (Theoretical Minimum 2)]]
 ```
 
-### Author
+### Book
 ``` md
 # Classical Mechanics: The Theoretical Minimum (Theoretical Minimum 1)
 #Book #Goodreads
