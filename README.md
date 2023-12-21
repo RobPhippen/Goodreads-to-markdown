@@ -22,6 +22,9 @@ gr2md.py
 python3 gr2md.py
 ```
 
+## Import to other systems
+This has been tested with Upnote, using its built-in markdown import. 
+
 
 ## Examples
 ### Author

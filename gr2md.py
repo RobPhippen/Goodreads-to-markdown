@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import csv  # CSV processing
 import re   # Regular expressions
+import os
+import sys
 
 def wikiLink(s):
     return f'[[{s}]]'
@@ -190,7 +192,32 @@ class Library:
             file.close
 
 
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+csvFileName = "goodreads_library_export.csv"
+mdDirectory = "Goodreads Library"
+bookIdFileName = "libraryIds.txt"
 
-library = Library("goodreads_library_export.csv")
-library.saveMarkdown('examples/Goodreads Library')
-library.saveIds('examples/libraryIds.txt')
+
+# Initilise the library object
+if not os.path.exists(csvFileName):
+    print(f'Could not find {csvFileName}')
+    sys.exit(1)
+else:
+    library = Library(csvFileName)
+
+# Create the 'Goodreads Library' directory and save the markdown files
+if os.path.exists(mdDirectory):
+    if not os.path.isdir(mdDirectory):
+        print('There is a file called Goodreads Library - fix this - should be a directory!')
+        sys.exit(1)
+    else:                                           # Directory already exists
+        library.saveMarkdown(mdDirectory)
+        library.saveIds(bookIdFileName)
+        sys.exit(0)
+else: # Directory does not yet exist
+    os.mkdir(mdDirectory)
+    library.saveMarkdown(mdDirectory)
+    library.saveIds(bookIdFileName)
+    sys.exit(0)
