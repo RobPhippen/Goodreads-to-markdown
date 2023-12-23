@@ -3,7 +3,7 @@ This utility takes the CSV export from goodreads:
 `goodreads_library_export.csv` and converts each book and each author into a separate markdown file.
 
 ## Features
-* It converts only a subset of the information into CSV, concentrating on information entered by the user, such as rating and comment (if any).
+* It converts only a subset of the information from the CSV into MarkDown, concentrating on information entered by the user, such as rating and comment (if any).
 * 'Shelves' are rendered as hashtags
 * A URL to the book description on Goodreads is inserted
 * Author documents are cross-linked from books and vice versa
